@@ -1,0 +1,44 @@
+@url = http://localhost:3000/api
+
+### Login (ejecutar este primero)
+# @name login
+POST {{url}}/auth/login
+Content-Type: application/json
+
+{ "email": "ana@mail.com", "password": "123456" }
+
+### Listar
+GET {{url}}/vehiculos
+Authorization: Bearer {{login.response.body.token}}
+
+### Crear
+POST {{url}}/vehiculos
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{ "marca": "Mercedes", "modelo": "Sprinter", "patente": "AB123CD", "anio": 2021, "capacidad_carga": 1500 }
+
+### Modificar
+PUT {{url}}/vehiculos/1
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{ "marca": "Mercedes", "modelo": "Sprinter", "patente": "AB123CD", "anio": 2022, "capacidad_carga": 1600 }
+
+### Eliminar
+DELETE {{url}}/vehiculos/1
+Authorization: Bearer {{login.response.body.token}}
+
+### Error 400
+POST {{url}}/vehiculos
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{ "marca": "", "anio": 1800 }
+
+### Error 401 (sin token)
+GET {{url}}/vehiculos
+
+### Error 404
+GET {{url}}/vehiculos/9999
+Authorization: Bearer {{login.response.body.token}}
