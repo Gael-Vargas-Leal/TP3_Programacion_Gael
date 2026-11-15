@@ -30,7 +30,7 @@ export default function Login() {
         body: { email: form.email, password: form.password },
       });
       localStorage.setItem('token', data.token);
-      navigate('/vehiculos');
+      navigate('/');
     } catch (err) {
       setMsg(err.message);
     }
