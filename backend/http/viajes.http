@@ -1,0 +1,88 @@
+@url = http://localhost:3000/api
+
+### Login (ejecutar este primero)
+# @name login
+POST {{url}}/auth/login
+Content-Type: application/json
+
+{ "email": "ana@mail.com", "password": "123456" }
+
+### Datos 1: vehículo
+# @name vehiculo
+POST {{url}}/vehiculos
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{ "marca": "Iveco", "modelo": "Daily", "patente": "V{{$randomInt 10000 99999}}", "anio": 2020, "capacidad_carga": 3000 }
+
+### Datos 2: conductor con licencia vigente
+# @name conductor
+POST {{url}}/conductores
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{ "nombre": "Luis", "apellido": "Soto", "numero_documento": "{{$randomInt 20000000 40000000}}", "numero_licencia": "L{{$randomInt 100000 999999}}", "fecha_alta_licencia": "2024-01-01", "fecha_vencimiento_licencia": "2030-01-01" }
+
+### Datos 3: conductor con licencia vencida
+# @name vencido
+POST {{url}}/conductores
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{ "nombre": "Mario", "apellido": "Rey", "numero_documento": "{{$randomInt 20000000 40000000}}", "numero_licencia": "L{{$randomInt 100000 999999}}", "fecha_alta_licencia": "2015-01-01", "fecha_vencimiento_licencia": "2020-01-01" }
+
+### Crear viaje (201)
+# @name viaje
+POST {{url}}/viajes
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{ "vehiculo_id": {{vehiculo.response.body.id}}, "conductor_id": {{conductor.response.body.id}}, "fecha_salida": "2026-11-20T08:00", "fecha_llegada": "2026-11-20T18:00", "origen": "La Rioja", "destino": "Córdoba", "kilometros": 450, "observaciones": "Carga seca" }
+
+### Historial
+GET {{url}}/viajes
+Authorization: Bearer {{login.response.body.token}}
+
+### Por vehículo
+GET {{url}}/viajes?vehiculo_id={{vehiculo.response.body.id}}
+Authorization: Bearer {{login.response.body.token}}
+
+### Por conductor
+GET {{url}}/viajes?conductor_id={{conductor.response.body.id}}
+Authorization: Bearer {{login.response.body.token}}
+
+### Total de km por conductor
+GET {{url}}/viajes/km?conductor_id={{conductor.response.body.id}}
+Authorization: Bearer {{login.response.body.token}}
+
+### Error 403 (licencia vencida)
+POST {{url}}/viajes
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{ "vehiculo_id": {{vehiculo.response.body.id}}, "conductor_id": {{vencido.response.body.id}}, "fecha_salida": "2026-11-20T08:00", "fecha_llegada": "2026-11-20T18:00", "origen": "La Rioja", "destino": "Córdoba", "kilometros": 450 }
+
+### Error 400 (llegada anterior a la salida)
+POST {{url}}/viajes
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{ "vehiculo_id": {{vehiculo.response.body.id}}, "conductor_id": {{conductor.response.body.id}}, "fecha_salida": "2026-11-20T18:00", "fecha_llegada": "2026-11-20T08:00", "origen": "A", "destino": "B", "kilometros": 10 }
+
+### Error 404 (vehículo inexistente)
+POST {{url}}/viajes
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{ "vehiculo_id": 9999, "conductor_id": {{conductor.response.body.id}}, "fecha_salida": "2026-11-20T08:00", "fecha_llegada": "2026-11-20T18:00", "origen": "A", "destino": "B", "kilometros": 10 }
+
+### Error 401 (sin token)
+GET {{url}}/viajes
+
+### Error 400 (borrar un vehículo con viajes)
+DELETE {{url}}/vehiculos/{{vehiculo.response.body.id}}
+Authorization: Bearer {{login.response.body.token}}
+
+### Eliminar viaje (204)
+DELETE {{url}}/viajes/{{viaje.response.body.id}}
+Authorization: Bearer {{login.response.body.token}}
