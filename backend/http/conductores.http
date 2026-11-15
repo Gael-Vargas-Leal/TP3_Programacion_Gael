@@ -1,0 +1,45 @@
+@url = http://localhost:3000/api
+
+### Login (ejecutar este primero)
+# @name login
+POST {{url}}/auth/login
+Content-Type: application/json
+
+{ "email": "ana@mail.com", "password": "123456" }
+
+### Listar
+GET {{url}}/conductores
+Authorization: Bearer {{login.response.body.token}}
+
+### Crear
+# @name conductor
+POST {{url}}/conductores
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{ "nombre": "Juan", "apellido": "Pérez", "numero_documento": "{{$randomInt 20000000 40000000}}", "numero_licencia": "L{{$randomInt 100000 999999}}", "fecha_alta_licencia": "2024-01-01", "fecha_vencimiento_licencia": "2030-01-01" }
+
+### Modificar (usa el id del conductor recién creado)
+PUT {{url}}/conductores/{{conductor.response.body.id}}
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{ "nombre": "Juan Carlos", "apellido": "Pérez", "numero_documento": "30111222", "numero_licencia": "L123456", "fecha_alta_licencia": "2024-01-01", "fecha_vencimiento_licencia": "2031-01-01" }
+
+### Eliminar
+DELETE {{url}}/conductores/{{conductor.response.body.id}}
+Authorization: Bearer {{login.response.body.token}}
+
+### Error 400 (vencimiento anterior al alta)
+POST {{url}}/conductores
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{ "nombre": "Ana", "apellido": "Gómez", "numero_documento": "31222333", "numero_licencia": "L999", "fecha_alta_licencia": "2024-01-01", "fecha_vencimiento_licencia": "2020-01-01" }
+
+### Error 401 (sin token)
+GET {{url}}/conductores
+
+### Error 404
+GET {{url}}/conductores/9999
+Authorization: Bearer {{login.response.body.token}}
